@@ -1,5 +1,3 @@
-// src/components/auth/Onboarding.tsx
-
 'use client';
 
 import { useState } from 'react';
@@ -23,7 +21,8 @@ interface RanchFormData {
 
 export default function Onboarding() {
   const [currentStep, setCurrentStep] = useState<OnboardingStep>('welcome');
-  const { setCurrentRanch, setIsOnboardingComplete, setUser } = useStore();
+  // Eliminamos setUser ya que no se usa en este componente
+  const { setCurrentRanch, setIsOnboardingComplete } = useStore();
   
   const {
     register,
@@ -73,7 +72,7 @@ export default function Onboarding() {
           <div className="flex justify-between mt-2">
             {steps.map((step, index) => (
               <div
-                key={step.id}
+                key={step.id"
                 className={`text-xs ${
                   index <= currentStepIndex ? 'text-blue-600 font-medium' : 'text-gray-400'
                 }`}
