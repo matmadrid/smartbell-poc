@@ -1,0 +1,136 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String
+  phone         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  ranches       Ranch[]
+  tasks         Task[]
+}
+
+model Ranch {
+  id            String    @id @default(cuid())
+  name          String
+  location      String?
+  size          Float?    // Hectáreas
+  userId        String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  user          User      @relation(fields: [userId], references: [id])
+  cattle        Cattle[]
+  productions   Production[]
+  tasks         Task[]
+}
+
+model Cattle {
+  id            String    @id @default(cuid())
+  internalId    String    // Número interno o nombre
+  breed         String    // Raza
+  gender        Gender
+  birthDate     DateTime
+  weight        Float?
+  ranchId       String
+  
+  // Información adicional
+  crossBreed    String?   // Raza de cruce
+  purityLevel   String?   // Nivel de cruza (FB, F1, F2, etc)
+  developmentStage String? // Etapa de desarrollo
+  
+  // Información de padres
+  fatherId      String?
+  motherId      String?
+  
+  // Información reproductiva
+  lastBirth     DateTime?
+  lactationCycle Int?     // Ciclo de lactancia
+  reproductiveStage String? // Etapa reproductiva
+  
+  status        CattleStatus @default(ACTIVE)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  ranch         Ranch     @relation(fields: [ranchId], references: [id])
+  productions   Production[]
+  tasks         Task[]
+}
+
+model Production {
+  id            String    @id @default(cuid())
+  cattleId      String
+  ranchId       String
+  liters        Float
+  date          DateTime
+  shift         Shift     // MORNING, AFTERNOON, EVENING
+  quality       String?   // Calidad de la leche
+  notes         String?
+  createdAt     DateTime  @default(now())
+  
+  cattle        Cattle    @relation(fields: [cattleId], references: [id])
+  ranch         Ranch     @relation(fields: [ranchId], references: [id])
+}
+
+model Task {
+  id            String    @id @default(cuid())
+  title         String
+  description   String?
+  dueDate       DateTime
+  frequency     TaskFrequency // ONCE, DAILY, WEEKLY, MONTHLY
+  status        TaskStatus @default(PENDING)
+  userId        String
+  ranchId       String
+  cattleId      String?   // Opcional, puede ser tarea general del rancho
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  completedAt   DateTime?
+  
+  user          User      @relation(fields: [userId], references: [id])
+  ranch         Ranch     @relation(fields: [ranchId], references: [id])
+  cattle        Cattle?   @relation(fields: [cattleId], references: [id])
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum CattleStatus {
+  ACTIVE
+  SOLD
+  DECEASED
+  RETIRED
+}
+
+enum Shift {
+  MORNING
+  AFTERNOON
+  EVENING
+}
+
+enum TaskFrequency {
+  ONCE
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum TaskStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
